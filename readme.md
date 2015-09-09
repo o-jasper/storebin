@@ -105,3 +105,5 @@ gzip "dont know" how it is structured, and so i can give that a hand.
 * Speed not a high priority at the moment, but a C version would definitely be
   faster. Also unclear if `lua` "sees through" the `read`/`write` functions
   passed.
+
+  C might also make it more useable for non-lua users.
