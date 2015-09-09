@@ -1,0 +1,62 @@
+local function assert_eq(a, b, k)
+   assert(type(a) == type(b),
+          string.format("(%s)%s ~= %s, (%s %s)", k, a,b, type(a), type(b)))
+   if type(a) == "table" then
+      for k,v in pairs(a) do
+         assert_eq(v, b[k], k)
+      end
+   else
+      assert(a == b, string.format("%s ~= %s", a,b))
+   end
+end
+
+local rand = math.random
+
+local function randval(stat)
+   local r = rand(6) - 1
+   if r == 0 then
+      x = rand(stat.min or -10.0, stat.max or 10.0)
+   elseif r == 1 or r == 2 then
+      x = rand(stat.mini or -256, stat.maxi or 267)
+   elseif r == 3 then
+      x = ""
+      for _ = 1,rand(stat.strl or 10) do x = x .. string.char(rand(256)-1) end
+   elseif r == 4 then
+      x = nil
+   else
+      local r = rand(4)
+      x = (r==1 and 1/0) or (r==2 and -1/0) or r==3
+   end
+   return x
+end
+
+local function gen_tree(top, d, stat)
+   stat = stat or {}
+   top = (top == nil) or top
+   local ret, n = {}, 0
+   for _ = 1, top and l or (rand(stat.l or 6) - 1) do
+      local x
+      if not d or d > 0 and rand() < (stat.p or 0.4) then
+         local m
+         x, m = gen_tree(false, (d  or 6) - 1, stat)
+         n = n + m
+      else
+         x = randval(stat)
+         n = n + 1
+      end
+      if false and rand() < (stat.pk or 0.5) then
+         local k = randval(stat) or "nil"
+         if true or ({number=true})[type(k)] then  -- TODO bug regarding keys..
+            print("*K", k)
+            ret[k] = x
+         else
+            table.insert(ret, x)
+         end
+      else
+         table.insert(ret, x)
+      end
+   end
+   return ret, n
+end
+
+return { assert_eq, gen_tree }
