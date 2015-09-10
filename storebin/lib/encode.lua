@@ -94,12 +94,15 @@ encoders = {
       for j = 1,i do
          encode(write, data[j])
       end
-      
+      local keys = {}
       for k,v in pairs(data) do  -- Feed the key-value.
          if not (not_key[k] or got[k]) then
             encode(write, k)
-            encode(write, v)
+            table.insert(keys, k)
          end
+      end
+      for _,key in ipairs(keys) do
+         encode(write, data[key])
       end
    end,
 

@@ -22,8 +22,11 @@ local function decode_table(read, cnt, meta_fun, deflist)
       local got = decode(read, meta_fun, deflist)
       table.insert(ret, got)
    end
+   local keys = {}
    for _ = 1,cnt do
-      local key = decode(read, meta_fun, deflist)
+      table.insert(keys, decode(read, meta_fun, deflist))
+   end
+   for _, key in ipairs(keys) do
       ret[key]  = decode(read, meta_fun, deflist)
    end
    return ret

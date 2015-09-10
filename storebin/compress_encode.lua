@@ -96,21 +96,27 @@ local function apply_compressions(self, data)
             apply_compressions(self, v)
       end
       
-      -- Finish it off.
-      if no_tables then
-         local kv_ret = {}
-         for k, v in pairs(ret_kv) do
+      if no_tables then  -- All leaves are compressed, return result.
+         local kv_list = {}
+         for k,v in pairs(ret_kv) do
             assert(type(k) == "string" and type(v) == "string")
-            table.insert(kv_ret, k .. v)
+            table.insert(kv_list, {k,v})
          end
+         table.sort(kv_list, function(a,b) return a[1] > b[1] end)
+
+         local keys_ret = {}
+         for _, kv in ipairs(kv_list)  do table.insert(keys_ret, kv[1]) end
+         local values_ret = {}
+         for _, kv in ipairs(kv_list) do table.insert(values_ret, kv[2]) end
+
          for _,v in pairs(ret_list) do assert(type(v) == "string") end
-         table.sort(kv_ret)  -- Improve chances well-defined portions.
+
          -- TODO key-value portion identifying?
-         local ret_str = encode_uint(6 + 8*#kv_ret) .. encode_uint(#ret_list) ..
-            table.concat(ret_list) .. table.concat(kv_ret)
+         local ret_str = encode_uint(6 + 8*#kv_list) .. encode_uint(#ret_list) ..
+            table.concat(ret_list) .. table.concat(keys_ret) .. table.concat(values_ret)
          --tick_def(self, ret_str)
          return ret_str
-      else
+      else  -- Need more steps.
          ret_kv[2] = ret_list
          return ret_kv
       end
