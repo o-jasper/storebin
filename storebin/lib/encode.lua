@@ -5,7 +5,7 @@
 --  by the Free Software Foundation, either version 3 of the License, or
 --  (at your option) any later version.
 
-local floor, abs, char = math.floor, math.abs, string.char
+local floor, abs = math.floor, math.abs
 
 local encode_uint = require "storebin.lib.encode_uint"
 
@@ -39,95 +39,8 @@ local function encode(write, data)
    encoders[type(data) or "nil"](write, data)
 end
 
-local function figure_tp_list(list)
-   -- Figure if list has simple single type.
-   -- 0         per-item-type.
-   -- 1, 2, 3   pos, neg, both, integers
-   -- 4         floats (both positive and negative)
-   -- 5         booleans
-   -- 6         string
-   local inttp = {[1]=true, [2]=true, [3]=true}
-
-   local tp = nil
-   for _, el in ipairs(list) do
-      if type(el) == "number" then
-         if el == 1/0 or el == -1/0 or (el~=0 and 2*el == el) or el ~= el then
-            return 0 -- Dont do these.
-         elseif el == 0 then
-            tp = tp or 1  -- Any integer or float type will do.
-            if not (inttp[tp] or tp ==4) then return 0 end
-         elseif el % 1 == 0 then  -- Positive integer.
-            local h = (el >= 0) and 1 or 2
-            tp = tp or h
-            if not inttp[tp] then  -- Non integers, ditch.
-               return 0
-            elseif tp ~= h then  -- Also seen other sign.
-               tp = 3
-            end
-         else  -- Float.
-            tp = tp or 4
-            if tp ~= 4 then return 0 end  -- Float or ditch.
-         end
-      else
-         local h = ({boolean=5, string=6})[type(el) or 0] or 0
-         if h == 0 then return 0 end
-         tp = tp or h
-         if tp ~= h then return 0 end
-      end
-   end
-   return tp or 0
-end
-
-local function encode_bool_arr(write, list)
-   assert(type(list[1]) == "boolean")
-   local x, f = list[1] and 1 or 0, 2
-   for i = 2, #list do
-      if (i-1)%8 == 0 then
-         write(char(x))
-         x, f = 0, 1
-      end
-      if list[i] then
-         x = x + f
-      end
-      f = 2*f
-   end
-   write(char(x))
-end
-
-local function encode_list(write, tp, list)
-   assert(tp == figure_tp_list(list))
-   if tp == 5 then
-      encode_bool_arr(write, list)
-   else
-      for _, el in ipairs(list) do
-         if tp == 1 then
-            assert(type(el) == "number" and el % 1 == 0 and el >= 0)
-            encode_uint(write, el)
-         elseif tp == 2 then
-            assert(type(el) == "number" and el % 1 == 0 and el <= 0)
-            encode_uint(write, -el)
-         elseif tp == 3 then
-            assert(type(el) == "number" and el % 1 == 0, el)
-            encode_uint(write, (el<0 and 1 or 0) + 2*abs(el))
-         elseif tp == 4 then
-            assert(type(el) == "number") 
-            local x = abs(el)
-            local sub = submerge(x)
-            local y = floor(x*2^(63-sub))
-            encode_uint(write, (sub < 1 and 1 or 0) + 2*abs(sub))
-            encode_uint(write, (el < 0 and 1 or 0) + 2*y)
-         elseif tp == 5 then
-            error("BUG")
-         elseif tp == 6 then
-            assert(type(el) == "string", tostring(el))
-            encode_uint(write, #el)
-            write(el)
-         else-- Untyped.
-            encode(write, el)
-         end
-      end
-   end
-end
+local figure_tp_list = require "storebin.lib.figure_tp_list"
+local encode_list = require "storebin.lib.encode_list"
 
 encoders = {
    string = function(write, data)
@@ -196,10 +109,4 @@ encoders = {
    thread = function(write) encode_uint(write, 5 + 16*5) end,
 }
 
-local function pub_encode(write, data, without_deflist)
-   -- This encoder does not do definitions.
-   if not without_deflist then encode_uint(write, 0) end
-   encode(write, data)
-end
-
-return pub_encode
+return encode
