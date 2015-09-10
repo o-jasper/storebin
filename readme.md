@@ -85,10 +85,10 @@ Same for the length indicating part of strings and tables.
 Just do some limited measures for compression. Only do measures where programs like
 gzip "dont know" how it is structured, and so i can give that a hand.
 
-* **Lists** (done)  f there is no more than two subsequent `nil`s in lists, it
-  is stored as lists, i.e. avoiding the key-value stuff.
+* **Lists** (done)
 
-  Dont rely on the allowance of `nil`s though.
+* **All-same-types** in lists, keys, and values are implemented.
+  TODO is compressive version does not actually do this yet.
 
 * **Keys, _then_ values**, doing the keys first and then the values, both
   sorted by key probably increases chance of i.e. gzip "seeing the repetition there".
@@ -107,3 +107,5 @@ gzip "dont know" how it is structured, and so i can give that a hand.
   passed.
 
   C might also make it more useable for non-lua users.
+
+* Compressive version should use subsequent-same-types.
