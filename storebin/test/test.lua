@@ -22,10 +22,10 @@ for i = 1, tonumber(arg[2]) or 20 do
    assert_eq(t1, t, " @plain")
    assert_eq(t, t1, " @plain(rev)")
 
---   local d2 = opt_encode(t)
---   local t2 = decode(d2)
---   assert_eq(t2, t)
---   assert_eq(t, t2)
+   local d2 = opt_encode(t)
+   local t2 = decode(d2)
+   assert_eq(t2, t, " @opt")
+   assert_eq(t, t2, " @opt(rev)")
 --   -- This being essentially noise, not much chance of winning.
---   if #d1 ~= #d2 then print("", #d1, #d2) end
+   if #d1 ~= #d2 then print("", #d1, #d2) end
 end

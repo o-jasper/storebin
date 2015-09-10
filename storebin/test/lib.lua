@@ -1,6 +1,7 @@
 local function assert_eq(a, b, k, nameit)
    assert(type(a) == type(b),
-          string.format("(%s)%s ~= %s, (%s %s)%s", k, a,b, type(a), type(b), nameit))
+          string.format("(%s;%s)%s ~= %s, (%s %s)%s",
+                        k,type(k), a,b, type(a), type(b), nameit))
    if type(a) == "table" then
       for k,v in pairs(a) do
          assert_eq(v, b[k], k)
@@ -45,12 +46,8 @@ local function gen_tree(top, d, stat)
          n = n + 1
       end
       if rand() < (stat.pk or 0.5) then
-         local k = randval(stat) or "nil"
-         if ({boolean=true, number=true})[type(k)] then  -- TODO bug if a key is a string.
-            ret[k] = x
-         else
-            table.insert(ret, x)
-         end
+         local k = randval(stat)
+         ret[k == nil and "stumpening" or k] = x
       else
          table.insert(ret, x)
       end
