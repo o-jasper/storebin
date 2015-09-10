@@ -13,17 +13,30 @@ end
 
 local rand = math.random
 
+local function rand_str(stat)
+   local x = ""
+   for _ = 1,rand(stat.strl or 10) do x = x .. string.char(rand(256)-1) end
+   return x
+end
+
+local long_repeat
+
 local function randval(stat)
-   local r = rand(6) - 1
+   local r = rand(7) - 1
    if r == 0 then
       x = rand(stat.min or -10.0, stat.max or 10.0)
    elseif r == 1 or r == 2 then
       x = rand(stat.mini or -256, stat.maxi or 267)
    elseif r == 3 then
-      x = ""
-      for _ = 1,rand(stat.strl or 10) do x = x .. string.char(rand(256)-1) end
+      x = rand_str(stat)
    elseif r == 4 then
       x = nil
+   elseif r == 5 then  -- set of long repeated things.
+      if not long_repeat then
+         long_repeat = {}
+         for _ = 1, (stat.repeat_cnt or 4) do table.insert(long_repeat, rand_str(stat)) end
+      end
+      x = long_repeat[rand(#long_repeat)]
    else
       local r = rand(4)
       x = (r==1 and 1/0) or (r==2 and -1/0) or r==3
@@ -57,8 +70,7 @@ local function gen_tree(top, d, stat)
             elseif r == 5 then -- Booleans
                y = (rand(2) == 1)
             elseif r == 6 then
-               y = ""
-               for _ = 1,rand(stat.strl or 10) do y = y .. string.char(rand(256)-1) end
+               y = rand_str(stat)
             end
             table.insert(x, y)
          end
