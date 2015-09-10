@@ -1,12 +1,12 @@
-local function assert_eq(a, b, k)
+local function assert_eq(a, b, k, nameit)
    assert(type(a) == type(b),
-          string.format("(%s)%s ~= %s, (%s %s)", k, a,b, type(a), type(b)))
+          string.format("(%s)%s ~= %s, (%s %s)%s", k, a,b, type(a), type(b), nameit))
    if type(a) == "table" then
       for k,v in pairs(a) do
          assert_eq(v, b[k], k)
       end
    else
-      assert(a == b, string.format("%s ~= %s", a,b))
+      assert(a == b, string.format("%s ~= %s%s", a,b, nameit))
    end
 end
 
@@ -44,10 +44,9 @@ local function gen_tree(top, d, stat)
          x = randval(stat)
          n = n + 1
       end
-      if false and rand() < (stat.pk or 0.5) then
+      if rand() < (stat.pk or 0.5) then
          local k = randval(stat) or "nil"
-         if true or ({number=true})[type(k)] then  -- TODO bug regarding keys..
-            print("*K", k)
+         if ({boolean=true, number=true})[type(k)] then  -- TODO bug if a key is a string.
             ret[k] = x
          else
             table.insert(ret, x)

@@ -19,9 +19,9 @@ for i = 1, tonumber(arg[2]) or 20 do
    
    local d1 = encode(t)
    local t1 = decode(d1)
-   assert_eq(t1,t)
-   assert_eq(t,t1)
-   
+   assert_eq(t1, t, " @plain")
+   assert_eq(t, t1, " @plain(rev)")
+
 --   local d2 = opt_encode(t)
 --   local t2 = decode(d2)
 --   assert_eq(t2, t)
