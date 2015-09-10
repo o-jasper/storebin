@@ -46,17 +46,18 @@ local function by_leaves(self, input_data)
       local data = {}
       for k,v in pairs(input_data) do data[k] = v end
 
-      local ret, strip = {nil, {}}, {}
+      local ret, not_data = {nil, {}}, {}
       for i,v in ipairs(data) do
          table.insert(ret[2], by_leaves(self, v))
-         table.insert(strip, i)
+         not_data[i] = true
       end
-      for _,i in ipairs(strip) do data[i] = nil end
 
       for k,v in pairs(data) do
-         local ed_k = encode(k)
-         tick_def(self, ed_k)
-         ret[ed_k] = by_leaves(self, v)
+         if not not_data[k] then
+            local ed_k = encode(k)
+            tick_def(self, ed_k)
+            ret[ed_k] = by_leaves(self, v)
+         end
       end
 
       for k,v in pairs(ret) do
