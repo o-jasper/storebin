@@ -41,6 +41,27 @@ local function gen_tree(top, d, stat)
          local m
          x, m = gen_tree(false, (d  or 6) - 1, stat)
          n = n + m
+      elseif rand() < (stat.p_unif or 0.2) then  -- Generate some uniform stuff.
+         local r = rand(6)
+         x = {}
+         for _ = 1,rand(stat.l or 6) do
+            local y
+            if r == 1 then  -- Positive integers.
+               y = rand(stat.maxui or 1000)
+            elseif r == 2 then  -- neg..
+               y = -rand(stat.maxui or 1000)
+            elseif r == 3 then  -- both..
+               y = rand(stat.mini or -256, stat.maxi or 267)
+            elseif r == 4 then -- Floats
+               y = rand(stat.min or -10.0, stat.max or 10.0)
+            elseif r == 5 then -- Booleans
+               y = (rand(2) == 1)
+            elseif r == 6 then
+               y = ""
+               for _ = 1,rand(stat.strl or 10) do y = y .. string.char(rand(256)-1) end
+            end
+            table.insert(x, y)
+         end
       else
          x = randval(stat)
          n = n + 1
