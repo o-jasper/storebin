@@ -15,6 +15,19 @@ local function decode_positive_float(read, top)
    return y*2^(sub-63)
 end
 
+local function decode_bool(read, cnt, ret)
+   local i, data = 1, read(floor(cnt/8) + 1)
+   while true do
+      local b = assert(byte(data, i))
+      for _ = 1,8 do
+         table.insert(ret, b%2 == 1)
+         b = floor(b/2)
+         i = i + 1
+         if i > cnt then return ret end
+      end
+   end
+end
+
 local decode
 
 local function decode_list(read, tp, cnt, meta_fun, deflist)
@@ -36,15 +49,7 @@ local function decode_list(read, tp, cnt, meta_fun, deflist)
          table.insert(ret, ((x%2 == 0) and 1 or -1) * decode_positive_float(read, floor(x/2)))
       end
    elseif tp == 5 then
-      local n = floor(cnt/8) + 1
-      local data = read(n)
-      for i = 1, n do
-         local b = byte(data, i)
-         for j = 0,7 do
-            table.insert(ret, b % 2 == 1)
-            b = floor(b/2)
-         end
-      end
+      decode_bool(read, cnt, ret)
    elseif tp == 6 then
       for _ = 1,cnt do table.insert(ret, read(decode_uint(read))) end
    end
@@ -59,10 +64,10 @@ local function decode_table(read, top, meta_fun, deflist)
    local list_top = decode_uint(read)
    local tp_list, list_cnt, ret = list_top%8, floor(list_top/8), {}
 
-   local ret = decode_list(read, tp_list, list_cnt)
+   local ret = decode_list(read, tp_list, list_cnt, meta_fun, deflist)
 
-   local keys   = decode_list(read, tp_keys,   keys_cnt)
-   local values = decode_list(read, tp_values, keys_cnt)
+   local keys   = decode_list(read, tp_keys,   keys_cnt, meta_fun, deflist)
+   local values = decode_list(read, tp_values, keys_cnt, meta_fun, deflist)
 
    for i, k in ipairs(keys) do ret[k] = values[i] end
 

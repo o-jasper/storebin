@@ -112,7 +112,7 @@ local function apply_compressions(self, data)
          for _,v in pairs(ret_list) do assert(type(v) == "string") end
 
          -- TODO key-value portion identifying?
-         local ret_str = encode_uint(6 + 8*#kv_list) .. encode_uint(#ret_list) ..
+         local ret_str = encode_uint(6 + 512*#kv_list) .. encode_uint(8*#ret_list) ..
             table.concat(ret_list) .. table.concat(keys_ret) .. table.concat(values_ret)
          --tick_def(self, ret_str)
          return ret_str

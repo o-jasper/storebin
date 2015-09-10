@@ -1,7 +1,10 @@
 local serial = require "storebin"
 local assert_eq = unpack(require "storebin.test.lib")
 
-local tab = {1,2,4, 7.5,{},true,false,nil, sub={q=1,r="ska", 1/0,-1/0}, ska=43}
+local tab = {
+   1,2,4, 7.5,{},true,false,nil, sub={q=1,r="ska", 1/0,-1/0}, ska=43,
+   bools = { true, true, false, true, false, false },
+}
 
 local file = "/tmp/lua_a"
 print("---encode---")

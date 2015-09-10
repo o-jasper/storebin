@@ -5,7 +5,7 @@
 --  by the Free Software Foundation, either version 3 of the License, or
 --  (at your option) any later version.
 
-local floor, abs = math.floor, math.abs
+local floor, abs, char = math.floor, math.abs, string.char
 
 local encode_uint = require "storebin.lib.encode_uint"
 
@@ -53,25 +53,26 @@ local function figure_tp_list(list)
    local tp = nil
    for _, el in ipairs(list) do
       if type(el) == "number" then
-         if data == 1/0 or data == -1/0 or (data~=0 and 2*data == data) or data ~= data then
+         if el == 1/0 or el == -1/0 or (el~=0 and 2*el == el) or el ~= el then
             return 0 -- Dont do these.
          elseif el == 0 then
             tp = tp or 1  -- Any integer or float type will do.
-            if not inttp[tp] and not floattp[tp] then return 0 end
+            if not (inttp[tp] or tp ==4) then return 0 end
          elseif el % 1 == 0 then  -- Positive integer.
             local h = (el >= 0) and 1 or 2
             tp = tp or h
-            if tp ~= h then  -- Also seen other sign.
-               tp = 3
-            elseif not inttp[tp] then  -- Non integers, ditch.
+            if not inttp[tp] then  -- Non integers, ditch.
                return 0
+            elseif tp ~= h then  -- Also seen other sign.
+               tp = 3
             end
          else  -- Float.
             tp = tp or 4
-            if tp ~= 4 then return 0 end
+            if tp ~= 4 then return 0 end  -- Float or ditch.
          end
       else
-         local h = ({boolean=5, string=6})[type(el) or "not"] or "not"
+         local h = ({boolean=5, string=6})[type(el) or 0] or 0
+         if h == 0 then return 0 end
          tp = tp or h
          if tp ~= h then return 0 end
       end
@@ -79,34 +80,37 @@ local function figure_tp_list(list)
    return tp or 0
 end
 
-local function encode_list(write, tp, list)
-   if tp == 5 then
-      assert(type(list[1]) = "boolean")
-      local x, f = list[1] and 1 or 0, 1
-      for i = 2, #list do
-         if (i-1)%8 == 0 then
-            write(char(x))
-            x, f = 0, 1
-         end
-         if list[i] then
-            x = x + f
-         end
-         f = f*2
+local function encode_bool_arr(write, list)
+   assert(type(list[1]) == "boolean")
+   local x, f = list[1] and 1 or 0, 2
+   for i = 2, #list do
+      if (i-1)%8 == 0 then
+         print(x)
+         write(char(x))
+         x, f = 0, 1
       end
-      write(char(x))
+      if list[i] then
+         x = x + f
+      end
+      f = 2*f
+   end
+   write(char(x))
+end
+
+local function encode_list(write, tp, list)
+   assert(tp == figure_tp_list(list))
+   if tp == 5 then
+      encode_bool_arr(write, list)
    else
       for _, el in ipairs(list) do
-         if tp == 0 then
-            encode_uint(write, #el)
-            write(el)
-         elseif tp == 1 then
+         if tp == 1 then
             assert(type(el) == "number" and el % 1 == 0 and el >= 0)
             encode_uint(write, el)
          elseif tp == 2 then
             assert(type(el) == "number" and el % 1 == 0 and el <= 0)
             encode_uint(write, -el)
          elseif tp == 3 then
-            assert(type(el) == "number" and el % 1)
+            assert(type(el) == "number" and el % 1 == 0, el)
             encode_uint(write, (el<0 and 1 or 0) + 2*abs(el))
          elseif tp == 4 then
             assert(type(el) == "number") 
@@ -116,7 +120,11 @@ local function encode_list(write, tp, list)
             encode_uint(write, (sub < 1 and 1 or 0) + 2*abs(sub))
             encode_uint(write, (el < 0 and 1 or 0) + 2*y)
          elseif tp == 5 then
-            error()
+            error("BUG")
+         elseif tp == 6 then
+            assert(type(el) == "string", tostring(el))
+            encode_uint(write, #el)
+            write(el)
          else-- Untyped.
             encode(write, el)
          end
@@ -148,32 +156,35 @@ encoders = {
    end,
 
    table = function(write, data)
-      local i, got = 1, {}  -- Figure out what goes in the list.
-      for i in ipairs(data) do got[i] = true end
+      local n, got = 0, {}  -- Figure out what goes in the list.
+      for i in ipairs(data) do
+         got[i] = true
+         n = n + 1
+      end
 
       local keys, values = {}, {}
       for k,v in pairs(data) do
-         if not (not_key[k] or got[k]) then
+         if not (not_key[k] or got[k]) and v ~= nil and k ~= nil then
             table.insert(keys, k)
             table.insert(values, v)
          end
       end
-      local tp_keys, tp_values = figure_tp_list(keys), figure_tp_list(keys)
+      local tp_keys, tp_values = figure_tp_list(keys), figure_tp_list(values)
       if getmetatable(data) then
-         encode_uint(write, 7 + 8*tp_list + 64*tp_values + 512*#keys)
+         encode_uint(write, 7 + 8*tp_keys + 64*tp_values + 512*#keys)
          -- Put in the name too.
          local name = type(data.metatable_name) == "function" and data:metatable_name() or ""
          assert(type(name) == "string")
          encode_uint(write, #name)
          write(name)
       else
-         encode_uint(write, 6 + 8*tp_list + 64*tp_values + 512*#keys)
+         encode_uint(write, 6 + 8*tp_keys + 64*tp_values + 512*#keys)
       end
       local tp_list = figure_tp_list(data)
-      encode_uint(write, tp_list + 8*i)  -- Feed the list.
+      encode_uint(write, tp_list + 8*n)  -- Feed the list.
       encode_list(write, tp_list, data)
 
-      encode_list(write, tp_keys, keys)
+      encode_list(write, tp_keys,   keys)
       encode_list(write, tp_values, values)
    end,
 
