@@ -5,7 +5,7 @@
 --  by the Free Software Foundation, either version 3 of the License, or
 --  (at your option) any later version.
 
-local floor = math.floor
+local floor, byte = math.floor, string.byte
 
 local decode_uint = require "storebin.lib.decode_uint"
 
@@ -14,21 +14,58 @@ local function decode_positive_float(read, top)
    local sub = ((top%2 == 0) and 1 or -1) * floor(top/2)
    return y*2^(sub-63)
 end
+
 local decode
 
-local function decode_table(read, cnt, meta_fun, deflist)
-   local list_cnt, ret = decode_uint(read), {}
-   for i = 1,list_cnt do
-      local got = decode(read, meta_fun, deflist)
-      table.insert(ret, got)
+local function decode_list(read, tp, cnt, meta_fun, deflist)
+   local ret = {}
+   if tp== 0 then
+      for _ = 1,cnt do table.insert(ret, decode(read, meta_fun, deflist)) end
+   elseif tp == 1 then
+      for _ = 1,cnt do table.insert(ret, decode_uint(read)) end
+   elseif tp == 2 then
+      for _ = 1,cnt do table.insert(ret, -decode_uint(read)) end
+   elseif tp == 3 then
+      for _ = 1,cnt do
+         local x = decode_uint(read)
+         table.insert(ret, ((x%2 == 0) and 1 or -1) * floor(x/2))
+      end
+   elseif tp == 4 then
+      for _ = 1,cnt do
+         local x = decode_uint(read)
+         table.insert(ret, ((x%2 == 0) and 1 or -1) * decode_positive_float(read, floor(x/2)))
+      end
+   elseif tp == 5 then
+      local n = floor(cnt/8) + 1
+      local data = read(n)
+      for i = 1, n do
+         local b = byte(data, i)
+         for j = 0,7 do
+            table.insert(ret, b % 2 == 1)
+            b = floor(b/2)
+         end
+      end
+   elseif tp == 6 then
+      for _ = 1,cnt do table.insert(ret, read(decode_uint(read))) end
    end
-   local keys = {}
-   for _ = 1,cnt do
-      table.insert(keys, decode(read, meta_fun, deflist))
-   end
-   for _, key in ipairs(keys) do
-      ret[key]  = decode(read, meta_fun, deflist)
-   end
+   return ret
+end
+
+local function decode_table(read, top, meta_fun, deflist)
+   local tp_keys   = top%8
+   local tp_values = floor(top/8)%8
+   local keys_cnt  = floor(top/64)
+
+   local list_top = decode_uint(read)
+   local tp_list, list_cnt, ret = list_top%8, floor(list_top/8), {}
+
+   local ret = decode_list(read, tp_list, list_cnt)
+
+   local keys   = decode_list(read, tp_keys,   keys_cnt)
+   local values = decode_list(read, tp_values, keys_cnt)
+
+   for i, k in ipairs(keys) do ret[k] = values[i] end
+
    return ret
 end
 
