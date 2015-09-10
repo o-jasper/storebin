@@ -16,14 +16,12 @@ local encodefun_uint = require "storebin.lib.encode_uint"
 local function encode_uint(x)
    local ret = ""
    encodefun_uint(function(str) ret = ret .. str end, x)
---   local y, i = decode_uint(ret)
---   assert(y == x and i - 1 == #ret)
    return ret
 end
 
 local function encode(data)
    local ret = ""
-   encodefun(function(str) ret = ret .. str end, data, true)
+   encodefun(function(str) ret = ret .. str end, data)
    return ret
 end
 
