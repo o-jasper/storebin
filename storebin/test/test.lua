@@ -19,13 +19,13 @@ for i = 1, tonumber(arg[2]) or 20 do
    
    local d1 = encode(t)
    local t1 = decode(d1)
-   assert_eq(t1, t, " @plain")
-   assert_eq(t, t1, " @plain(rev)")
+   assert_eq(t1, t, nil, " @plain")
+   assert_eq(t, t1, nil, " @plain(rev)")
 
    local d2 = opt_encode(t)
    local t2 = decode(d2)
-   assert_eq(t2, t, " @opt")
-   assert_eq(t, t2, " @opt(rev)")
+   assert_eq(t2, t, nil, " @opt")
+   assert_eq(t, t2, nil, " @opt(rev)")
 --   -- This being essentially noise, not much chance of winning.
    if #d1 ~= #d2 then print("", #d1, #d2) end
 end

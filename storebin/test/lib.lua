@@ -4,7 +4,7 @@ local function assert_eq(a, b, k, nameit)
                         k,type(k), a,b, type(a), type(b), nameit))
    if type(a) == "table" then
       for k,v in pairs(a) do
-         assert_eq(v, b[k], k)
+         assert_eq(v, b[k], k, nameit)
       end
    else
       assert(a == b, string.format("%s ~= %s%s", a,b, nameit))
