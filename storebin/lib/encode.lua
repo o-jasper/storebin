@@ -39,8 +39,6 @@ local function encode(write, data)
    encoders[type(data) or "nil"](write, data)
 end
 
-local not_key = { ["nil"]=true, ["function"]=true, userdata=true, thread=true }
-
 local function figure_tp_list(list)
    -- Figure if list has simple single type.
    -- 0         per-item-type.
@@ -85,7 +83,6 @@ local function encode_bool_arr(write, list)
    local x, f = list[1] and 1 or 0, 2
    for i = 2, #list do
       if (i-1)%8 == 0 then
-         print(x)
          write(char(x))
          x, f = 0, 1
       end
@@ -164,7 +161,7 @@ encoders = {
 
       local keys, values = {}, {}
       for k,v in pairs(data) do
-         if not (not_key[k] or got[k]) and v ~= nil and k ~= nil then
+         if not got[k] and v ~= nil and k ~= nil then
             table.insert(keys, k)
             table.insert(values, v)
          end
