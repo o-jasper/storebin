@@ -72,7 +72,7 @@ decode = function(read, meta_fun, deflist)
             return decode_table(read, decode_uint(read), meta_fun, deflist, false,true)
          elseif pass2 == 6 then
             return decode_table(read, decode_uint(read), meta_fun, deflist, true, false)
-         elseif pass == 7 then
+         elseif pass2 == 7 then
             return decode_table(read, decode_uint(read), meta_fun, deflist, true,true)
          else
             return ({false, true, nil, 1/0, -1/0})[1 + pass2]
