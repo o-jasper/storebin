@@ -39,8 +39,9 @@ local function encode(write, data)
    encoders[type(data) or "nil"](write, data)
 end
 
-local figure_tp_list = require "storebin.lib.figure_tp_list"
-local encode_list = require "storebin.lib.encode_list"
+local function encode_list(write, list)
+   for _, el in ipairs(list) do encode(write, el) end
+end
 
 encoders = {
    string = function(write, data)
@@ -79,23 +80,21 @@ encoders = {
             table.insert(values, v)
          end
       end
-      local tp_keys, tp_values = figure_tp_list(keys), figure_tp_list(values)
       if getmetatable(data) then
-         encode_uint(write, 7 + 8*(tp_keys%8) + 64*(tp_values%8) + 512*#keys)
+         encode_uint(write, 7 + 8*#keys)
          -- Put in the name too.
          local name = type(data.metatable_name) == "function" and data:metatable_name() or ""
          assert(type(name) == "string")
          encode_uint(write, #name)
          write(name)
       else
-         encode_uint(write, 6 + 8*(tp_keys%8) + 64*(tp_values%8) + 512*#keys)
+         encode_uint(write, 6 + 8*#keys)
       end
-      local tp_list = figure_tp_list(data)
-      encode_uint(write, tp_list + 8*n)  -- Feed the list.
-      encode_list(write, tp_list, data)
+      encode_uint(write, n)  -- Feed the list.
+      encode_list(write, data)
 
-      encode_list(write, tp_keys,   keys)
-      encode_list(write, tp_values, values)
+      encode_list(write, keys)
+      encode_list(write, values)
    end,
 
    boolean = function(write, data) encode_uint(write, 5 + 16*(data and 1 or 0)) end,

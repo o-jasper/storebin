@@ -30,54 +30,18 @@ end
 
 local decode
 
-local function decode_list(read, tp, cnt, meta_fun, deflist)
+local function decode_list(read, cnt, meta_fun, deflist)
    local ret = {}
-   if tp== 0 then
-      for _ = 1,cnt do table.insert(ret, decode(read, meta_fun, deflist)) end
-   elseif tp == 1 then
-      for _ = 1,cnt do table.insert(ret, decode_uint(read)) end
-   elseif tp == 2 then
-      for _ = 1,cnt do table.insert(ret, -decode_uint(read)) end
-   elseif tp == 3 then
-      for _ = 1,cnt do
-         local x = decode_uint(read)
-         table.insert(ret, ((x%2 == 0) and 1 or -1) * floor(x/2))
-      end
-   elseif tp == 4 then
-      for _ = 1,cnt do
-         local x = decode_uint(read)
-         table.insert(ret, ((x%2 == 0) and 1 or -1) * decode_positive_float(read, floor(x/2)))
-      end
-   elseif tp == 5 then
-      decode_bool_arr(read, cnt, ret)
-   elseif tp == 6 then
-      local ind = read(1)
-      for _ = 1,cnt do
-         local str = ""
-         local got = read(1)
-         while got ~= ind do
-            str = str .. got
-            got = read(1)
-            assert(type(got) == "string")
-         end
-         table.insert(ret, str)
-      end
-   end
+   for _ = 1,cnt do table.insert(ret, decode(read, meta_fun, deflist)) end
    return ret
 end
 
-local function decode_table(read, top, meta_fun, deflist)
-   local tp_keys   = top%8
-   local tp_values = floor(top/8)%8
-   local keys_cnt  = floor(top/64)
+local function decode_table(read, keys_cnt, meta_fun, deflist)
+   local list_cnt = decode_uint(read)
+   local ret = decode_list(read, list_cnt, meta_fun, deflist)
 
-   local list_top = decode_uint(read)
-   local tp_list, list_cnt, ret = list_top%8, floor(list_top/8), {}
-
-   local ret = decode_list(read, tp_list, list_cnt, meta_fun, deflist)
-
-   local keys   = decode_list(read, tp_keys,   keys_cnt, meta_fun, deflist)
-   local values = decode_list(read, tp_values, keys_cnt, meta_fun, deflist)
+   local keys   = decode_list(read, keys_cnt, meta_fun, deflist)
+   local values = decode_list(read, keys_cnt, meta_fun, deflist)
 
    for i, k in ipairs(keys) do ret[k] = values[i] end
 
