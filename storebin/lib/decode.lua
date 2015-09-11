@@ -76,18 +76,18 @@ decode = function(read, meta_fun, deflist)
    elseif sel == 4 then -- Negative float.
       return -1 * decode_positive_float(read, pass)
    elseif sel == 5 then -- Boolean, nil, other.
+      local pass2 = floor(pass/2)
       if pass%2 == 1 then  -- Read out a defintion.
-         return copy(deflist[floor(pass/2)])
+         return copy(deflist[pass2])
       else
-         local sk = floor(pass/2)
-         if sk == 5 then
+         if pass2 == 5 then
             return decode_table(read, decode_uint(read), meta_fun, deflist, false,true)
-         elseif sk == 6 then
+         elseif pass2 == 6 then
             return decode_table(read, decode_uint(read), meta_fun, deflist, true, false)
          elseif pass == 7 then
             return decode_table(read, decode_uint(read), meta_fun, deflist, true,true)
          else
-            return ({false, true, nil, 1/0, -1/0})[1 + sk]
+            return ({false, true, nil, 1/0, -1/0})[1 + pass2]
          end
       end
    elseif sel == 6 then
