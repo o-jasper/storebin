@@ -4,7 +4,7 @@ local decode = require "storebin.decode"
 local plain_encode = require "storebin.plain_encode"
 local compress_encode = require "storebin.compress_encode"
 
-local storer = {
+local encdecs = {
    { encode=plain_encode,    decode=decode, name="plain" },
    { encode=compress_encode, decode=decode, name="compress" },
 }
@@ -29,7 +29,7 @@ for i = 1, tonumber(arg[2]) or 20 do
    local tab, n = gen_tree(true,6, {mini=10000, maxi=10002})
    
    local ret = {n}
-   for _, el in ipairs(storer) do
+   for _, el in ipairs(encdecs) do
       local pt = clock()
       local data = el.encode(tab)
       local dt = clock()
@@ -38,8 +38,8 @@ for i = 1, tonumber(arg[2]) or 20 do
       table.insert(ret, dt - dt)
       table.insert(ret, ft - dt)
       table.insert(ret, #data)
-      assert_eq(a_tab, tab,   nil, " @" .. el.name .. "")
-      assert_eq(tab,   a_tab, nil, " @" .. el.name .. "(rev)")
+      assert_eq(a_tab, tab,   nil, " @" .. el.name .. "(after-before)")
+      assert_eq(tab,   a_tab, nil, " @" .. el.name .. "(before-after)")
    end
    print(unpack(ret))
 end
