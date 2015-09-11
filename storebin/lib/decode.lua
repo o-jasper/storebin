@@ -36,12 +36,14 @@ local function decode_list(read, cnt, meta_fun, deflist)
    return ret
 end
 
-local function decode_table(read, keys_cnt, meta_fun, deflist)
+local function decode_table(read, keys_cnt, meta_fun, deflist, listbool, valbool)
    local list_cnt = decode_uint(read)
-   local ret = decode_list(read, list_cnt, meta_fun, deflist)
+   local ret = listbool and decode_bool_arr(read, list_cnt, {}) or
+      decode_list(read, list_cnt, meta_fun, deflist)
 
    local keys   = decode_list(read, keys_cnt, meta_fun, deflist)
-   local values = decode_list(read, keys_cnt, meta_fun, deflist)
+   local values = valbool and decode_bool_arr(read, keys_cnt, {}) or
+      decode_list(read, keys_cnt, meta_fun, deflist)
 
    for i, k in ipairs(keys) do ret[k] = values[i] end
 
@@ -77,14 +79,22 @@ decode = function(read, meta_fun, deflist)
       if pass%2 == 1 then  -- Read out a defintion.
          return copy(deflist[floor(pass/2)])
       else
-         return ({false, true, nil, 1/0, -1/0})[1 + floor(pass/2)]
+         local sk = floor(pass/2)
+         if sk == 7 then
+            return decode_table(read, decode_uint(read), meta_fun, deflist, false,true)
+         elseif sk == 6 then
+            return decode_table(read, decode_uint(read), meta_fun, deflist, true, false)
+         elseif pass == 5 then
+            return decode_table(read, decode_uint(read), meta_fun, deflist, true,true)
+         else
+            return ({false, true, nil, 1/0, -1/0})[1 + sk]
+         end
       end
    elseif sel == 6 then
       return decode_table(read, pass, meta_fun, deflist)
-   elseif sel == 7 then -- Table.
-      local name_len = decode_uint(read)
-      local name = read(name_len)
-      local ret = decode_table(read, pass, meta_fun, deflist)
+   elseif sel == 7 then -- Apply meta fun.
+      local name = read(pass)
+      local ret = decode(read, meta_fun, deflist)
       return meta_fun[key] and meta_fun[key](ret) or ret
    end
 end
