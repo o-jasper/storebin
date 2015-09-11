@@ -73,23 +73,25 @@ encoders = {
          n = n + 1
       end
 
-      local keys, values = {}, {}
+      local keys, values, all_bool = {}, {}, true
       for k,v in pairs(data) do
          if not got[k] and v ~= nil and k ~= nil then
             table.insert(keys, k)
             table.insert(values, v)
+            all_bool = all_bool and type(v) == "bool"
          end
       end
-      if getmetatable(data) then
-         encode_uint(write, 7 + 8*#keys)
+      if getmetatable(data) then  -- Write-in the name.
          -- Put in the name too.
          local name = type(data.metatable_name) == "function" and data:metatable_name() or ""
          assert(type(name) == "string")
-         encode_uint(write, #name)
+
+         encode_uint(write, 7 + 8*#name)
          write(name)
-      else
-         encode_uint(write, 6 + 8*#keys)
       end
+
+      encode_uint(write, 6 + 8*#keys)
+
       encode_uint(write, n)  -- Feed the list.
       encode_list(write, data)
 
