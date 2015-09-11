@@ -1,3 +1,5 @@
+local char = string.char
+
 local function figure_tp_list(list)
    -- Figure if list has simple single type.
    -- 0         per-item-type.
@@ -32,6 +34,21 @@ local function figure_tp_list(list)
          if h == 0 then return 0 end
          tp = tp or h
          if tp ~= h then return 0 end
+      end
+   end
+   if tp == 6 then
+      -- Find a non-occuring character..
+      local have, n = {}, 0
+      for _, el in ipairs(list) do
+         n = n + (#el > 15 and 1 or 0)  -- These take two bytes.
+         for i = 1,#el do have[string.sub(el, i,i)] = true end
+      end
+      local i = 0
+      while have[char(i)] and i <256 do i = i + 1 end
+      if i < 256 then
+         return 6 + 8*i
+      else
+         return 0
       end
    end
    return tp or 0

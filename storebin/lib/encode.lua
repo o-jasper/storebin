@@ -81,14 +81,14 @@ encoders = {
       end
       local tp_keys, tp_values = figure_tp_list(keys), figure_tp_list(values)
       if getmetatable(data) then
-         encode_uint(write, 7 + 8*tp_keys + 64*tp_values + 512*#keys)
+         encode_uint(write, 7 + 8*(tp_keys%8) + 64*(tp_values%8) + 512*#keys)
          -- Put in the name too.
          local name = type(data.metatable_name) == "function" and data:metatable_name() or ""
          assert(type(name) == "string")
          encode_uint(write, #name)
          write(name)
       else
-         encode_uint(write, 6 + 8*tp_keys + 64*tp_values + 512*#keys)
+         encode_uint(write, 6 + 8*(tp_keys%8) + 64*(tp_values%8) + 512*#keys)
       end
       local tp_list = figure_tp_list(data)
       encode_uint(write, tp_list + 8*n)  -- Feed the list.

@@ -2,13 +2,17 @@ local encode_bool_arr = require "storebin.lib.encode_bool_arr"
 local encode_list_plain = require "storebin.lib.encode_list_plain"
 local encode_uint = require "storebin.lib.encode_uint"
 
-local abs = math.abs
+local abs, floor, char = math.abs, math.floor, string.char
 
 local function encode_list(write, tp, list)
    if tp == 0 then
       encode_list_plain(write, list)
    elseif tp == 5 then
       encode_bool_arr(write, list)
+   elseif tp % 8 == 6 then
+      local ind = char(floor(tp/8))  -- Figure indicator. Write using it.
+      write(ind)
+      for _, el in ipairs(list) do write(el) write(ind) end
    else
       for _, el in ipairs(list) do
          if tp == 1 then
@@ -29,10 +33,6 @@ local function encode_list(write, tp, list)
             encode_uint(write, (el < 0 and 1 or 0) + 2*y)
          elseif tp == 5 then
             error("BUG bool-lists should be done separately.")
-         elseif tp == 6 then  -- TODO really it does fairly little for strings.
-            assert(type(el) == "string", tostring(el))
-            encode_uint(write, #el)
-            write(el)
          else
             error("BUG %d?", tp)
          end

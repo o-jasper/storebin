@@ -5,7 +5,7 @@
 --  by the Free Software Foundation, either version 3 of the License, or
 --  (at your option) any later version.
 
-local floor, byte = math.floor, string.byte
+local floor, byte, char = math.floor, string.byte, string.char
 
 local decode_uint = require "storebin.lib.decode_uint"
 
@@ -15,7 +15,7 @@ local function decode_positive_float(read, top)
    return y*2^(sub-63)
 end
 
-local function decode_bool(read, cnt, ret)
+local function decode_bool_arr(read, cnt, ret)
    local i, data = 1, read(floor(cnt/8) + 1)
    while true do
       local b = assert(byte(data, i))
@@ -49,9 +49,19 @@ local function decode_list(read, tp, cnt, meta_fun, deflist)
          table.insert(ret, ((x%2 == 0) and 1 or -1) * decode_positive_float(read, floor(x/2)))
       end
    elseif tp == 5 then
-      decode_bool(read, cnt, ret)
+      decode_bool_arr(read, cnt, ret)
    elseif tp == 6 then
-      for _ = 1,cnt do table.insert(ret, read(decode_uint(read))) end
+      local ind = read(1)
+      for _ = 1,cnt do
+         local str = ""
+         local got = read(1)
+         while got ~= ind do
+            str = str .. got
+            got = read(1)
+            assert(type(got) == "string")
+         end
+         table.insert(ret, str)
+      end
    end
    return ret
 end
