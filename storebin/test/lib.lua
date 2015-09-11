@@ -1,10 +1,12 @@
-local function assert_eq(a, b, k, nameit)
+local function assert_eq(a, b, k, nameit, not_top)
+   assert(not not_top or k ~= nil)
    assert(type(a) == type(b),
           string.format("(%s;%s)%s ~= %s, (%s %s)%s",
                         k,type(k), a,b, type(a), type(b), nameit))
    if type(a) == "table" then
       for k,v in pairs(a) do
-         assert_eq(v, b[k], k, nameit)
+         assert(k ~= nil)
+         assert_eq(v, b[k], k, nameit, true)
       end
    else
       assert(a == b, string.format("%s ~= %s%s", a,b, nameit))
