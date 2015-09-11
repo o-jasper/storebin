@@ -4,9 +4,12 @@ local decode = require "storebin.decode"
 local plain_encode = require "storebin.plain_encode"
 local compress_encode = require "storebin.compress_encode"
 
+-- local json = require "json"
+
 local encdecs = {
-   { encode=plain_encode,    decode=decode, name="plain" },
-   { encode=compress_encode, decode=decode, name="compress" },
+   { encode=plain_encode,    decode=decode,      name="plain" },
+   { encode=compress_encode, decode=decode,      name="compress" },
+--   { encode=json.encode,     decode=json.decode, name="json" },
 }
 
 local seed = tonumber(arg[1])
@@ -26,7 +29,7 @@ print("#  For each one between brackets")
 print("# N [plainencode_time decode_time length]")
 
 for i = 1, tonumber(arg[2]) or 20 do
-   local tab, n = gen_tree(true,6, {mini=10000, maxi=10002})
+   local tab, n = gen_tree(true,6, {mini=10000, maxi=10002, string_key=true, nice=true})
    
    local ret = {n}
    for _, el in ipairs(encdecs) do
@@ -38,8 +41,8 @@ for i = 1, tonumber(arg[2]) or 20 do
       table.insert(ret, dt - dt)
       table.insert(ret, ft - dt)
       table.insert(ret, #data)
-      assert_eq(a_tab, tab,   nil, " @" .. el.name .. "(after-before)")
-      assert_eq(tab,   a_tab, nil, " @" .. el.name .. "(before-after)")
+      assert_eq(a_tab, tab,   nil, " @" .. el.name .. "(after-before)\n" .. data)
+      assert_eq(tab,   a_tab, nil, " @" .. el.name .. "(before-after)\n" .. data)
    end
    print(unpack(ret))
 end

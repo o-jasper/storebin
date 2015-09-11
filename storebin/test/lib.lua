@@ -15,7 +15,19 @@ end
 
 local rand = math.random
 
+local function rand_nice_str(stat)
+   local choose = "abcdefghijklmnopqrstuvwxyz_01234567890"
+   local i = rand(27)
+   local x = string.sub(choose, i,i)
+   for _ = 1,rand(stat.strl or 10) do
+      local i = rand(#choose)
+      x = x .. string.sub(choose, i,i)
+   end
+   return x
+end
+
 local function rand_str(stat)
+   if stat.nice then return rand_nice_str(stat) end
    local x = ""
    for _ = 1,rand(stat.strl or 10) do x = x .. string.char(rand(256)-1) end
    return x
@@ -79,9 +91,9 @@ local function gen_tree(top, d, stat)
       else
          x = randval(stat)
          n = n + 1
-      end
+      end  -- TODO
       if rand() < (stat.pk or 0.5) then
-         local k = randval(stat)
+         local k = stat.string_key and rand_str(stat) or randval(stat)
          ret[k == nil and "stumpening" or k] = x
       else
          table.insert(ret, x)
