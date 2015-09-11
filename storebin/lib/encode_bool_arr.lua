@@ -1,9 +1,9 @@
 local char = string.char
 
-local function encode_bool_arr(write, list)
+local function encode_bool_arr(write, list, n)
    assert(type(list[1]) == "boolean")
    local x, f = list[1] and 1 or 0, 2
-   for i = 2, #list do
+   for i = 2, n or #list do
       if (i-1)%8 == 0 then
          write(char(x))
          x, f = 0, 1

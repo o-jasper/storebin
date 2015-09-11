@@ -5,27 +5,15 @@
 --  by the Free Software Foundation, either version 3 of the License, or
 --  (at your option) any later version.
 
-local floor, byte, char = math.floor, string.byte, string.char
+local floor = math.floor
 
 local decode_uint = require "storebin.lib.decode_uint"
+local decode_bool_arr = require "storebin.lib.decode_bool_arr"
 
 local function decode_positive_float(read, top)
    local y = decode_uint(read)
    local sub = ((top%2 == 0) and 1 or -1) * floor(top/2)
    return y*2^(sub-63)
-end
-
-local function decode_bool_arr(read, cnt, ret)
-   local i, data = 1, read(floor(cnt/8) + 1)
-   while true do
-      local b = assert(byte(data, i))
-      for _ = 1,8 do
-         table.insert(ret, b%2 == 1)
-         b = floor(b/2)
-         i = i + 1
-         if i > cnt then return ret end
-      end
-   end
 end
 
 local decode
