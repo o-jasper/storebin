@@ -1,12 +1,13 @@
 local encode_bool_arr = require "storebin.lib.encode_bool_arr"
-local encode
+local encode_list_plain = require "storebin.lib.encode_list_plain"
 local encode_uint = require "storebin.lib.encode_uint"
 
 local abs = math.abs
 
 local function encode_list(write, tp, list)
-   encode = encode or require "storebin.lib.encode"
-   if tp == 5 then
+   if tp == 0 then
+      encode_list_plain(write, list)
+   elseif tp == 5 then
       encode_bool_arr(write, list)
    else
       for _, el in ipairs(list) do
@@ -27,15 +28,13 @@ local function encode_list(write, tp, list)
             encode_uint(write, (sub < 1 and 1 or 0) + 2*abs(sub))
             encode_uint(write, (el < 0 and 1 or 0) + 2*y)
          elseif tp == 5 then
-            error("BUG")
-         elseif tp == 6 then
+            error("BUG bool-lists should be done separately.")
+         elseif tp == 6 then  -- TODO really it does fairly little for strings.
             assert(type(el) == "string", tostring(el))
             encode_uint(write, #el)
             write(el)
-         elseif tp == 0 then -- Untyped.
-            encode(write, el)
          else
-            error("BUG?")
+            error("BUG %d?", tp)
          end
       end
    end
