@@ -125,7 +125,7 @@ local function apply_compressions(self, data)
          -- TODO key-value portion identifying?
          local ret_str = encode_uint(6 + 8*#kv_list) .. encode_uint(#ret_list) ..
             table.concat(ret_list) .. table.concat(keys_ret) .. table.concat(values_ret)
-         --tick_def(self, ret_str)
+         tick_def(self, ret_str)
          return ret_str
       else  -- Need more steps.
          ret_kv[2] = ret_list

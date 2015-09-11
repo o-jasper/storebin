@@ -7,6 +7,8 @@ local tab = {
    string_nil = "nil",
    ["nil"] = -1,
    strings={"one", "two", "three"},
+   again={"one", "two", "three"},
+   three={"one", "two", "three"},
 }
 
 local file = "/tmp/lua_a"
