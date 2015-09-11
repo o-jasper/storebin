@@ -8,6 +8,7 @@
 local floor, abs = math.floor, math.abs
 
 local encode_uint = require "storebin.lib.encode_uint"
+local encode_bool_arr = require "storebin.lib.encode_bool_arr"
 
 local function submerge(x)
    return math.ceil(math.log(x)/math.log(2))
@@ -67,18 +68,19 @@ encoders = {
    end,
 
    table = function(write, data)
-      local n, got = 0, {}  -- Figure out what goes in the list.
-      for i in ipairs(data) do
+      local n, got, list_bool = 0, {}, true  -- Figure out what goes in the list.
+      for i, el in ipairs(data) do
          got[i] = true
          n = n + 1
+         list_bool = list_bool and type(el) == "boolean"
       end
 
-      local keys, values, all_bool = {}, {}, true
+      local keys, values, val_bool = {}, {}, true
       for k,v in pairs(data) do
          if not got[k] and v ~= nil and k ~= nil then
             table.insert(keys, k)
             table.insert(values, v)
-            all_bool = all_bool and type(v) == "bool"
+            val_bool = val_bool and type(v) == "boolean"
          end
       end
       if getmetatable(data) then  -- Write-in the name.
@@ -90,13 +92,22 @@ encoders = {
          write(name)
       end
 
-      encode_uint(write, 6 + 8*#keys)
+      local val_bool  = (#keys > 0 and val_bool)  -- No point in doing empty lists.
+      local list_bool = (n > 0 and list_bool)
+      if val_bool or list_bool then
+         encode_uint(write, 5 + 8*2*(val_bool and list_bool and 7 or val_bool and 5 or 6))
+         encode_uint(write, #keys)
+      else
+         encode_uint(write, 6 + 8*#keys)
+      end
 
       encode_uint(write, n)  -- Feed the list.
-      encode_list(write, data)
+      local fun = (list_bool and encode_bool_arr or encode_list)
+      fun(write, data)
 
-      encode_list(write, keys)
-      encode_list(write, values)
+      encode_list(write, keys)  -- And the key-values.
+      local fun = (val_bool and encode_bool_arr or encode_list)
+      fun(write, values)
    end,
 
    boolean = function(write, data) encode_uint(write, 5 + 16*(data and 1 or 0)) end,

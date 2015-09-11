@@ -36,13 +36,13 @@ local function decode_list(read, cnt, meta_fun, deflist)
    return ret
 end
 
-local function decode_table(read, keys_cnt, meta_fun, deflist, listbool, valbool)
+local function decode_table(read, keys_cnt, meta_fun, deflist, list_bool, val_bool)
    local list_cnt = decode_uint(read)
-   local ret = listbool and decode_bool_arr(read, list_cnt, {}) or
+   local ret = list_bool and decode_bool_arr(read, list_cnt, {}) or
       decode_list(read, list_cnt, meta_fun, deflist)
 
    local keys   = decode_list(read, keys_cnt, meta_fun, deflist)
-   local values = valbool and decode_bool_arr(read, keys_cnt, {}) or
+   local values = val_bool and decode_bool_arr(read, keys_cnt, {}) or
       decode_list(read, keys_cnt, meta_fun, deflist)
 
    for i, k in ipairs(keys) do ret[k] = values[i] end
@@ -80,11 +80,11 @@ decode = function(read, meta_fun, deflist)
          return copy(deflist[floor(pass/2)])
       else
          local sk = floor(pass/2)
-         if sk == 7 then
+         if sk == 5 then
             return decode_table(read, decode_uint(read), meta_fun, deflist, false,true)
          elseif sk == 6 then
             return decode_table(read, decode_uint(read), meta_fun, deflist, true, false)
-         elseif pass == 5 then
+         elseif pass == 7 then
             return decode_table(read, decode_uint(read), meta_fun, deflist, true,true)
          else
             return ({false, true, nil, 1/0, -1/0})[1 + sk]
