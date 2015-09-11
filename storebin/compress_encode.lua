@@ -45,17 +45,28 @@ local function by_leaves(self, input_data)
       for k,v in pairs(input_data) do data[k] = v end
 
       -- TODO use figure_tp.. kindah tricky, because that loses usage of identified patterns..
-      local ret, not_data = {nil, {}}, {}
+      local ret, not_data, list_bool = {nil, {}}, {}, true
       for i,v in ipairs(data) do
          table.insert(ret[2], by_leaves(self, v))
          not_data[i] = true
+         list_bool = list_bool and type(v) == "boolean"
       end
 
+      local val_bool, n = true, 0
       for k,v in pairs(data) do
          if not not_data[k] then
             local ed_k = encode(k)
             tick_def(self, ed_k)
             ret[ed_k] = by_leaves(self, v)
+            val_bool = val_bool and type(v) == "boolean"
+            n = n + 1
+         end
+      end
+
+      if list_bool and val_bool then
+         -- Just plainly encode the input data, it'll do it for us.
+         if #data > 0 or n > 0 then
+            return encode(input_data)
          end
       end
 
