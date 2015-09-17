@@ -92,8 +92,8 @@ encoders = {
          write(name)
       end
 
-      local val_bool  = (#keys > 0 and val_bool)  -- No point in doing empty lists.
-      local list_bool = (n > 0 and list_bool)
+      local val_bool  = (#keys > 2 and val_bool)  -- No point in doing empty lists.
+      local list_bool = (n > 2 and list_bool)
       if val_bool or list_bool then
          encode_uint(write, 5 + 16*(val_bool and list_bool and 7 or val_bool and 5 or 6))
          encode_uint(write, #keys)
