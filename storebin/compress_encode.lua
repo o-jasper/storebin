@@ -64,18 +64,8 @@ local function by_leaves(self, input_data)
       end
 
       if list_bool and val_bool then
-         -- Just plainly encode the input data, it'll do it for us.
-         if #data > 0 or n > 0 then
-            return encode(input_data)
-         end
-      end
-
-      for k,v in pairs(ret) do
-         assert(k == 2 or type(k)=="string", string.format("%s, %s", k, v))
-         assert(type(v) == "string" or type(v) == "table", string.format("%s, %s", k, v))
-      end
-      for _,v in ipairs(ret[2]) do
-         assert(type(v) == "string" or type(v) == "table", string.format("%s, %s", k, v))
+         -- Just plainly encode the input data, won't use definitions anyway.
+         return encode(input_data)
       end
       return ret
    else
@@ -91,6 +81,7 @@ end
 
 local function apply_compressions(self, data)
    if type(data) == "table" then
+
       local no_tables, ret_kv, ret_list = true, {}, {}
       for i,v in ipairs(data[2]) do   -- Do list portion.
          no_tables = no_tables and type(v) ~= "table"
