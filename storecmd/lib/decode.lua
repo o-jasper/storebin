@@ -116,8 +116,9 @@ local function finally_value(line, readline)
    return rem_line, value
 end
 
-local function decode(readline)
-   local empty, ret, last = true, {}, {}
+local function decode(readline, how, ret)
+   local empty, last = true, {}
+   ret = ret or {}
    
    local line = ""
    local function next_line()
@@ -127,22 +128,25 @@ local function decode(readline)
    next_line()
    if not line then return nil end
 
-   if sub(line, 1,1) == "=" then line = sub(line, 2) end
-
-   if not line then return ret end
    local path = {}
+   local permissive = how
    
+   local function next_n(name)
+      return find(line, permissive and ("^[%s]*" .. name .. "[%s]*") or ("^" .. name))
+   end
    while true do
-      if sub(line, 1,1) == "~" then
+      local n = next_n("~")
+      if n then
          assert(last[#path + 1] ~= nil, string.format("%s %s", #last, #path))
          table.insert(path, last[#path + 1])
-         line = sub(line, 2)
+         line = sub(line, n + 1)
       else
          local value, rem_line = decode_1(line, readline)
          table.insert(path, value)
          line = rem_line
-         if sub(line, 1,1) == "=" then
-            line = sub(line, 2)
+         local n = next_n("=")
+         if n then
+            line = sub(line, n + 1)
             empty = false
 
             line, value = finally_value(line, readline)
@@ -153,16 +157,18 @@ local function decode(readline)
 
             next_line()
             if not line then return ret end
-         elseif line == "" or line == "\n" then
+         elseif find(line, "^[%s]*$") then
             assert(empty, string.format("%s", table.concat(path, ".")))
             assert(#path == 1)
             return path[1]
-         elseif sub(line, 1,2) == " " then
+         elseif find(line, "^[%s]+") then
+            assert(empty)
             local _, value = finally_value(value, line)
             return value
          else
-            assert(sub(line, 1,1) == ".", string.format("%q", line))
-            line = sub(line, 2)
+            local n = next_n(".")
+            assert(n, string.format("%q", line))
+            line = sub(line, n + 1)
          end
       end
    end
