@@ -1,1 +1,1 @@
-return require("storebin.pkg.file_decode_via_string")(require "storebin.lib.decode")
+return require("storebin.pkg.file_decode_via_fun")(require "storebin.lib.decode")
