@@ -48,17 +48,37 @@ local function decode_1(from, readline, final)
    elseif f("^\"") then  -- Quoted string.
       from = sub(from, 2)
       local ret = {}
-      local i = f("\"") --f("[^\\]\"")
+      -- NOTE: bit pita function.
+      local function find_i()
+         local j = f("\"")
+         while j do
+            local init_j = j
+            local nope
+            assert(sub(from, j,j) =="\"")
+            while not nope do
+               -- Escaped and exscaper not escaped.
+               if sub(from, j-1, j-1) == "\\" then
+                  nope = (sub(from, j-2, j-2) ~= "\\")
+               else
+                  return init_j
+               end
+               j = j - 2
+            end
+            j = f("\"", init_j + 1)
+         end
+      end
+      local i = find_i()
       while not i do
          table.insert(ret, from)
          from = readline()
          assert(from, string.format("Couldnt find end of string\n%s\n--%s",
                                     table.concat(ret, "\n"), from))
-         --i = f("[^\\]\"") or f("^\"")
-         i = f("\"")
+         i = find_i()
       end
       table.insert(ret, sub(from, 1, i - 1))
-      return string.gsub(table.concat(ret, "\n"), "\\\"","\""), sub(from, i + 1)
+      local str = table.concat(ret, "\n")
+      local str = string.gsub(string.gsub(str, "\\\"","\""), "\\\\", "\\")
+      return str, sub(from, i + 1)
    else
       local _, t = f("^[%w_]+")
       assert(t, string.format("%q %s", from, final))
@@ -92,7 +112,7 @@ local function finally_value(line, readline)
       value = list
    end
    -- Straight value.
-   assert(rem_line == "", string.format("%q\n\n%q", rem_line, line))
+   assert(rem_line == "", string.format("%q\n\n%q\n\n%s", rem_line, line, value))
    return rem_line, value
 end
 
@@ -102,6 +122,7 @@ local function decode(readline)
    local line = ""
    local function next_line()
       line = readline()
+      print("---", line)
       while line == "" do line = readline() end
    end
    next_line()

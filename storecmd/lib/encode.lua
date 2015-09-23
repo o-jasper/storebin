@@ -32,11 +32,9 @@ encoders = {
             f("[%s%p]") or             -- .. confusing marks.
             str == "nil" or not f("^[%a]")  -- Refers on.
          then  -- Looks like something else, use string notation.
-            if f("\\") or f("\"") then --or f("\n") then  -- TODO escaping the escape..
-               write("#" .. enhex(str))
-            else
-               write("\"" .. string.gsub(str, [["]], [[\"]]) .. "\"")
-            end
+            write("\"")
+            write(string.gsub(string.gsub(str, "\\", "\\\\"), "\"", "\\\""))
+            write("\"")
          else  -- Is fine.
             assert(#str > 0)
             write(str)
