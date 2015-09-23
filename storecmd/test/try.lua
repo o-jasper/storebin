@@ -7,7 +7,10 @@ local prstf = false
 
 local function t(data)
    local ek = encode_str(data)
-   assert_eq(data, decode_str(ek))
+   local dec = decode_str(ek)
+   --if type(dec) == "table" then for k,v in pairs(dec) do print(k,v) end end
+   assert_eq(data, dec)
+   assert_eq(dec, data, nil, "(rev)")
 end
 
 t{[3.3] = 1}
@@ -31,3 +34,6 @@ t(blorb)
 t{ alpha=blorb }
 
 t{ a={b={c="ska", d=66, ["1"]=35}, neigbours="okey2"}, neighbours="okey"}
+
+t({})
+t(nil)
