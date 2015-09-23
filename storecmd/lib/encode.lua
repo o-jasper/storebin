@@ -65,6 +65,7 @@ encoders = {
       end
       if m > n/2 then
          n = 0
+         local k = 0
          for i,v in ipairs(tab) do
             if n == 0 and not inpos.top then
                say_where()
@@ -72,12 +73,14 @@ encoders = {
                write("=")
             end
             if type(v) ~= "table" then
+               for _ = 1, k do write("nil ") end
+               k = 0
                encode(write, v, { isvalue=true })
+               write(" ")
                done[i] = true
             else
-               write("nil")
+               k = k + 1
             end
-            write(" ")
             n = n + 1
          end
          write(n==1 and "nil\n" or "\n")
