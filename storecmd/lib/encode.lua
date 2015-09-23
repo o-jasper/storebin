@@ -45,8 +45,9 @@ encoders = {
    end,
 
    table = function(write, tab, inpos)
-      local done, n, said_where = {}, 0, false
+      local said_where = false
       local function say_where(further)
+         said_where = false  -- TODO override
          if said_where then  -- TODO can be more greedy than this..
             for _ = 1, inpos.cnt do write("~") end
          elseif inpos.str then
@@ -56,19 +57,27 @@ encoders = {
          end
       end
 
-      for i,v in ipairs({}) do --tab) do
+      local n, m, done = 0, 0, {}
+      for i,v in ipairs(tab) do
          if type(v) ~= "table" then
+            m = m + 1
+         end
+      end
+      if m > 0 then
+         for i,v in ipairs(tab) do
             if n == 0 and not inpos.top then
                say_where()
                write("=")
             end
-            encode(write, v, { isvalue=true })
-            done[i] = true
-         else
-            write("nil")
+            if type(v) ~= "table" then
+               encode(write, v, { isvalue=true })
+               done[i] = true
+            else
+               write("nil")
+            end
+            write(" ")
+            n = n + 1
          end
-         write(" ")
-         n = n + 1
       end
       if n == 1 then
          write("nil\n")
