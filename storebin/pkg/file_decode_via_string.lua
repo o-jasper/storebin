@@ -1,10 +1,16 @@
+local n = 256
+
 return function(decode)
    return function(file) 
       local fd = io.open(file)
       if fd then
-         local ret = decode(function(n) return fd:read(n) end)
-         fd:close()
-         return ret, true
+         local ret, got = "", fd:read(n)
+         while #got == n do
+            ret = ret .. got
+            got = fd:read(n)
+         end
+         ret = ret .. got
+         return ndecode(ret), true
       end
    end
 end
