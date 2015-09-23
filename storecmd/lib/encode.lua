@@ -73,13 +73,11 @@ encoders = {
                write("=")
             end
             if type(v) ~= "table" then
-               for _ = 1, k do write("nil ") end
-               k = 0
+               for _ = 1, n - k do write("nil ") end  -- Work up to now.
+               k = n + 1
                encode(write, v, { isvalue=true })
                write(" ")
                done[i] = true
-            else
-               k = k + 1
             end
             n = n + 1
          end
