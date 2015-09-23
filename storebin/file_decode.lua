@@ -1,10 +1,1 @@
-local decode = require "storebin.lib.decode"
-
-return function(file) 
-   local fd = io.open(file)
-   if fd then
-      local ret = decode(function(n) return fd:read(n) end)
-      fd:close()
-      return ret, true
-   end
-end
+return require("storebin.pkg.file_decode_via_string")(require "storebin.lib.decode")
