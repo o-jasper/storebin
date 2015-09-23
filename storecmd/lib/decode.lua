@@ -122,7 +122,6 @@ local function decode(readline)
    local line = ""
    local function next_line()
       line = readline()
-      print("---", line)
       while line == "" do line = readline() end
    end
    next_line()
