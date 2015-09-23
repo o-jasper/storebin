@@ -3,6 +3,11 @@ local dehex = require "storecmd.lib.dehex"
 
 local sub, find, match, char = string.sub, string.find, string.match, string.char
 
+local function skip_white(str)
+   local _, n = find(str, "^[%s]+")
+   return n and sub(str, n + 1) or str
+end
+
 local function decode_1(from, readline, final)
    local function f(...) return find(from, ...) end
    local function m(...) return match(from, ...) end
@@ -41,7 +46,6 @@ local function decode_1(from, readline, final)
    if t then
       return dehex(sub(from, 2, t)), sub(from, t + 1)
    end
-
 
    if f("^\"\"") then
       return "", sub(from, 3)
@@ -102,18 +106,20 @@ end
 
 local function finally_value(line, readline)
    -- Fill the value, expect end of line.
-   local value, rem_line = decode_1(line, readline, true)
-   if string.match(rem_line, "[ \t]") then  -- List of multiple.
-      local list = {value}
-      while string.match(rem_line, "[ \t]") do
-         value, rem_line = decode_1(line, readline, true)
-         table.insert(list, value)
-      end
-      value = list
+   local list, n = {}, 0
+   line = skip_white(line)
+   while line  ~= "" do
+      n = n + 1
+      line = skip_white(line)
+      value, line = decode_1(line, readline, true)
+
+      list[n] = value
    end
-   -- Straight value.
-   assert(rem_line == "", string.format("%q\n\n%q\n\n%s", rem_line, line, value))
-   return rem_line, value
+   if n == 1 then
+      return line, list[1]
+   else
+      return line, list
+   end
 end
 
 local function decode(readline, how, ret)
@@ -123,7 +129,6 @@ local function decode(readline, how, ret)
    local line = ""
    local function next_line()
       line = readline()
-      while line == "" do line = readline() end
    end
    next_line()
    if not line then return nil end
@@ -159,11 +164,21 @@ local function decode(readline, how, ret)
             if not line then return ret end
          elseif find(line, "^[%s]+") then
             assert(empty)
-            local _, value = finally_value(value, line)
-            return value
+            local _, val = finally_value(skip_white(line), readline)
+            if type(val) == "table" then
+               table.insert(val, 1, value)
+               for i, el in ipairs(val) do ret[i] = el end
+            else
+               ret[1] = value
+               ret[2] = val
+            end
+            path = {}
+            last = {}
+            next_line()
+            if not line then return ret end
          elseif line == "" then
             assert(empty, string.format("%s", table.concat(path, ".")))
-            assert(#path == 1)
+            -- TODO if #path == 0 want the line to have been nil
             return path[1]
          else
             local n = next_n(".")
