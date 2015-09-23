@@ -4,8 +4,8 @@ local dehex = require "storecmd.lib.dehex"
 local sub, find, match, char = string.sub, string.find, string.match, string.char
 
 local function skip_white(str)
-   local _, n = find(str, "^[%s]+")
-   return n and sub(str, n + 1) or str
+   local _, n = find(str, "^[%s]*")
+   return sub(str, n + 1)
 end
 
 local function decode_1(from, readline, final)
@@ -14,15 +14,15 @@ local function decode_1(from, readline, final)
 
    assert(not f("^[.]"))
 
-   if f("^true[=.]") or f("^true$") then
+   if f("^true[=. ]?") then
       return true, sub(from, 5)
-   elseif f("^false[=.]") or f("^false$") then
+   elseif f("^false[=. ]?") then
       return false, sub(from, 6)
-   elseif f("^nil[=.]") or f("^nil$") then
+   elseif f("^nil[=. ]?") then
       return nil, sub(from, 4)
-   elseif f("^inf[=.]") or f("^inf") then
+   elseif f("^inf[=. ]?") then
       return 1/0, sub(from, 4)
-   elseif f("^-inf[=.]") or f("^-inf") then
+   elseif f("^-inf[=. ]?") then
       return -1/0, sub(from, 5)
    end
 
@@ -96,7 +96,8 @@ local function insert(into, path, value)
       if type(into[name]) == "table" then
          into = into[name]
       else  -- Create if not exists.
-         assert(into[name] == nil)
+         assert(into[name] == nil,
+                string.format("Already have value; %s %s", into[name], type(into[name])))
          into[name] = {}
          into = into[name]
       end
@@ -110,8 +111,8 @@ local function finally_value(line, readline)
    line = skip_white(line)
    while line  ~= "" do
       n = n + 1
-      line = skip_white(line)
       value, line = decode_1(line, readline, true)
+      line = skip_white(line)
 
       list[n] = value
    end
@@ -163,13 +164,14 @@ local function decode(readline, how, ret)
             next_line()
             if not line then return ret end
          elseif find(line, "^[%s]+") then
-            assert(empty)
+            --assert(empty)
+            ret[1] = value
             local _, val = finally_value(skip_white(line), readline)
             if type(val) == "table" then
-               table.insert(val, 1, value)
-               for i, el in ipairs(val) do ret[i] = el end
+               for i, el in pairs(val) do
+                  ret[i + 1] = el
+               end
             else
-               ret[1] = value
                ret[2] = val
             end
             path = {}
