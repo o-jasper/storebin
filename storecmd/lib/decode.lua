@@ -157,14 +157,14 @@ local function decode(readline, how, ret)
 
             next_line()
             if not line then return ret end
-         elseif find(line, "^[%s]*$") then
-            assert(empty, string.format("%s", table.concat(path, ".")))
-            assert(#path == 1)
-            return path[1]
          elseif find(line, "^[%s]+") then
             assert(empty)
             local _, value = finally_value(value, line)
             return value
+         elseif line == "" then
+            assert(empty, string.format("%s", table.concat(path, ".")))
+            assert(#path == 1)
+            return path[1]
          else
             local n = next_n(".")
             assert(n, string.format("%q", line))
