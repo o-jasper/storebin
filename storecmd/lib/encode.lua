@@ -47,7 +47,6 @@ encoders = {
    table = function(write, tab, inpos)
       local said_where = false
       local function say_where(further)
-         said_where = false  -- TODO override
          if said_where then  -- TODO can be more greedy than this..
             for _ = 1, inpos.cnt do write("~") end
          elseif inpos.str then
@@ -69,6 +68,7 @@ encoders = {
          for i,v in ipairs(tab) do
             if n == 0 and not inpos.top then
                say_where()
+               said_where = false  -- TODO
                write("=")
             end
             if type(v) ~= "table" then
