@@ -65,6 +65,7 @@ encoders = {
          n = n + 1
       end
       if m > n/2 then
+         n = 0
          for i,v in ipairs(tab) do
             if n == 0 and not inpos.top then
                say_where()
@@ -77,6 +78,7 @@ encoders = {
                write("nil")
             end
             write(" ")
+            n = n + 1
          end
       else
          n = 0
