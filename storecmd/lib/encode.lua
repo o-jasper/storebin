@@ -80,14 +80,11 @@ encoders = {
             write(" ")
             n = n + 1
          end
+         write(n==1 and "nil\n" or "\n")
       else
          n = 0
       end
-      if n == 1 then
-         write("nil\n")
-      elseif n > 0 then
-         write("\n")
-      end
+
       local m = 0
       for k,v in pairs(tab) do
          if not done[k] then
