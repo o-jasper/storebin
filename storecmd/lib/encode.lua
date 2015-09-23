@@ -1,4 +1,4 @@
-local sub = string.sub
+local sub, find = string.sub, string.find
 
 local encoders = {}
 local function encode(write, data, inpos)
@@ -22,15 +22,23 @@ local enhex = require "storecmd.lib.enhex"
 
 encoders = {
    string = function(write, str)
-      if string.find(str, "^[%s%w%p]+$") then  -- Fine and dandy string.
-         if str == "" or str == "true" or str=="false" or -- Looks like boolean. 
-            string.find(str, "^tp:") or             -- .. like reduced-to-type
-            string.find(str, "^[%d]*[.]?[%d]+$") or -- .. number
-            string.find(str, "[%s%p]") or           -- .. confusing marks.
-            str == "nil"                            -- Refers on.
+      local function f(...) return find(str, ...) end
+      if str == "" then
+         write("\"\"")
+      elseif f("^[%s%w%p]+$") then     -- Fine and dandy string.
+         if str == "true" or str=="false" or          -- Looks like boolean.
+            f("^tp:") or               -- .. like reduced-to-type
+            f("^[%d]*[.]?[%d]+$") or   -- .. number
+            f("[%s%p]") or             -- .. confusing marks.
+            str == "nil" or not f("^[%a]")  -- Refers on.
          then  -- Looks like something else, use string notation.
-            write("\"" .. string.gsub(str, [["]], [[\"]]) .. "\"")
+            if f("\\") or f("\"") then --or f("\n") then  -- TODO escaping the escape..
+               write("#" .. enhex(str))
+            else
+               write("\"" .. string.gsub(str, [["]], [[\"]]) .. "\"")
+            end
          else  -- Is fine.
+            assert(#str > 0)
             write(str)
          end
       else  -- Not-fine, to hex.
@@ -41,7 +49,7 @@ encoders = {
    table = function(write, tab, inpos)
       local done, n, said_where = {}, 0, false
       local function say_where(further)
-         if said_where then
+         if said_where then  -- TODO can be more greedy than this..
             for _ = 1, inpos.cnt do write("~") end
          elseif inpos.str then
             said_where = true
@@ -69,8 +77,10 @@ encoders = {
       elseif n > 0 then
          write("\n")
       end
+      local m = 0
       for k,v in pairs(tab) do
          if not done[k] then
+            m = m + 1
             if type(v) ~= "table" then
                say_where(true)
                encode(write, k)
@@ -81,14 +91,25 @@ encoders = {
                local ek = encode_str(k)
                encode(write, v,
                       { cnt=inpos.cnt + 1,
-                        str = (inpos.str or "") .. "." .. ek, no_tab=true })
+                        str = (inpos.str or "") .. "." .. ek })
             end
          end
+      end
+      if m + n == 0 then  -- Completely empty.. Set something nil to indicate existence.
+         say_where(true)
+         encode(write, "exists")
+         write("=")
+         encode(write, nil, { isvalue=true })
+         write("\n")
       end
    end,
 
    number = function(write, x, inpos)
-      if inpos.isvalue or x%1 == 0 then
+      if x == 1/0 then
+         write("inf")
+      elseif x == -1/0 or (x~=0 and 2*x == x) or x ~= x then
+         write("-inf")
+      elseif inpos.isvalue or x%1 == 0 then
          write(tostring(x))
       else
          write("(" .. tostring(x) .. ")")

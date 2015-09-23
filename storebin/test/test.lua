@@ -10,6 +10,8 @@ local encdecs = {
    { encode=plain_encode,    decode=decode,      name="plain" },
    { encode=compress_encode, decode=decode,      name="compress" },
 --   { encode=json.encode,     decode=json.decode, name="json" },
+
+   { encode=require "storecmd.encode", decode= require "storecmd.decode", name="cmd" },
 }
 
 local seed = tonumber(arg[1])
@@ -29,8 +31,8 @@ print("#  For each one between brackets")
 print("# N [plainencode_time decode_time length]")
 
 for i = 1, tonumber(arg[2]) or 20 do
-   local tab, n = gen_tree(true,6, {mini=10000, maxi=10002, string_key=true, nice=true})
-   
+   local tab, n = gen_tree(true,6, {mini=10000, maxi=10002})-- string_key=true, nice=true})
+   print("# #", i)
    local ret = {n}
    for _, el in ipairs(encdecs) do
       local pt = clock()

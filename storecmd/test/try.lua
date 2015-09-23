@@ -10,11 +10,17 @@ local function t(data)
    assert_eq(data, decode_str(ek))
 end
 
+t{[3.3] = 1}
+
+t("b�")
+
+t{["b�"] = {1,2}}
+
 t("abcdefg,,dsgdsgs.gsgs")
 
 t("abcdefg")
 
-t{q={r=1}}
+t{q={r=1, s=2, t=3}}
 t(2325)
 t{q=1}
 t({2325})
