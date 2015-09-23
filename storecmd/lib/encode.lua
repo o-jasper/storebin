@@ -95,7 +95,7 @@ encoders = {
       end
       if m + n == 0 then  -- Completely empty.. Set something nil to indicate existence.
          say_where(true)
-         encode(write, "exists")
+         encode(write, "e")
          write("=")
          encode(write, nil, { isvalue=true })
          write("\n")
