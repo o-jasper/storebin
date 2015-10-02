@@ -19,6 +19,7 @@ the provided function.
      package.path = package.path ..
          string.format(";%s/.lualibs/?.lua;%s/.lualibs/?/init.lua", home, home)
 * `cd ~/.lualibs; ln -s $THISPROJ/storebin`
+* `cd ~/.lualibs; ln -s $THISPROJ/storecmd`
 
 ### Usage
 `require "storebin"` all these functions are accessible directly via
@@ -100,12 +101,25 @@ gzip "dont know" how it is structured, and so i can give that a hand.
 * The float situation `&pm;inf` or `nan` are only recorded insofar i detect them.
   (afaics all finite numbers are good. Also portability wise)
 
-* Better testing, profiling. (`via.lua` entirely untested.)
-
 * Speed not a high priority at the moment, but a C version would definitely be
   faster. Also unclear if `lua` "sees through" the `read`/`write` functions
   passed.
 
   C might also make it more useable for non-lua users.
 
-* Compressive version should use subsequent-same-types.
+## Lua Ring
+
+* [lua_Searcher](https://github.com/o-jasper/lua_Searcher) sql formulator including
+  search term, and Sqlite bindings.
+
+* [page_html](https://github.com/o-jasper/page_html) provide some methods on an object,
+  get a html page.(with js)
+
+* [storebin](https://github.com/o-jasper/storebin) converts trees to binary, same
+  interfaces as json package.(plus `file_encode`, `file_decode`)
+  
+* [PegasusJs](https://github.com/o-jasper/PegasusJs), easily RPCs javascript to
+  lua. In pegasus.
+
+* [tox_comms](https://github.com/o-jasper/tox_comms/), lua bindings to Tox and
+  bare bot.
