@@ -27,20 +27,28 @@ local function clock()
    return math.floor(os.clock()*1e9 + 0.5)
 end
 
-print("#  For each one between brackets")
-print("# N [plainencode_time decode_time length]")
+print("#  For each one between brackets (times in nanoseconds)")
+print("# i N [plainencode_time decode_time length]")
 
 for i = 1, tonumber(arg[2]) or 20 do
    local tab, n = gen_tree(true,6, {mini=10000, maxi=10002})-- string_key=true, nice=true})
-   print("# #", i)
-   local ret = {n}
+   local ret = {i, n}
    for _, el in ipairs(encdecs) do
       local pt = clock()
       local data = el.encode(tab)
+      local et = clock() - pt
+      if arg[3] == el.name then
+         local n = 0
+         for k,v in pairs(tab) do n = n + 1 print("*", k,v) end
+         if n == 0 then print("<empty table>") end
+         print("---")
+         print(data)
+         print("---")
+      end
       local dt = clock()
       local a_tab = el.decode(data)
       local ft = clock()
-      table.insert(ret, dt - dt)
+      table.insert(ret, et)
       table.insert(ret, ft - dt)
       table.insert(ret, #data)
       assert_eq(a_tab, tab,   nil, " @" .. el.name .. "(after-before)\n" .. data)
