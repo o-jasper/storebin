@@ -55,6 +55,7 @@ local function randval(stat)
    else
       local r = rand(4)
       x = (r==1 and 1/0) or (r==2 and -1/0) or r==3
+      if type(x) == "boolean" and stat.no_boolean then x= "no boolean" end
    end
    return x
 end
@@ -83,7 +84,11 @@ local function gen_tree(top, d, stat)
             elseif r == 4 then -- Floats
                y = rand(stat.min or -10.0, stat.max or 10.0)
             elseif r == 5 then -- Booleans
-               y = (rand(2) == 1)
+               if stat.no_boolean then
+                  y = math.random()
+               else
+                  y = (rand(2) == 1)
+               end
             elseif r == 6 then
                y = rand_str(stat)
             end
