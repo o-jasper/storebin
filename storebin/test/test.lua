@@ -4,6 +4,8 @@ local decode = require "storebin.decode"
 local plain_encode = require "storebin.plain_encode"
 local compress_encode = require "storebin.compress_encode"
 
+-- NOTE: json disabled because it can only do lists or tables, not both at the
+--   same time. The random generator doesn't do that.
 -- local json = require "json"
 
 local encdecs = {

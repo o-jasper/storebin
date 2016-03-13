@@ -1,4 +1,6 @@
-# Simple tree-to-binary encoder and decoder.
+*Note:* storecmd and storejson not really ready.
+
+# Simple tree-to-binary encoder and decoder
 Encodes the types and such aswel too.
 `number`, `string`, `table`, `nil`, `boolean` should work entirely.
 
@@ -17,9 +19,12 @@ Do your own thing.. Add to this directory to `package.path` or..
          string.format(";%s/.lualibs/?.lua;%s/.lualibs/?/init.lua", home, home)
 * `cd ~/.lualibs; ln -s $THISPROJ/storebin`
 
-
 For storecmd, `cd ~/.lualibs; ln -s $THISPROJ/storecmd` *however* i am not
 happy with that code. It was intended to be trees-easily-human readable.
+
+storejson straightjackets json into the same form as the other two, somewhat.
+However probably should go as far modifying it so it can do
+table-and-list-simultanious stuff.
 
 ### Usage
 `require "storebin"` all these functions are accessible directly via
