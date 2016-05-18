@@ -1,3 +1,5 @@
+error("TODO discontinued")
+
 local function gen_index(basename)
    local function index(self, key)
       local allowed = {

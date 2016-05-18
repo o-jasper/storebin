@@ -114,7 +114,8 @@ encoders = {
 
    ["nil"] = function(write) encode_uint(write, 5 + 16*2) end,
    
-   ["function"] = function(write) encode_uint(write, 5 + 16*3) end,
+   ["function"] = function(write) error("Can't encode functions") end,
+   -- encode_uint(write, 5 + 16*3) end,
 
    userdata = function(write) encode_uint(write, 5 + 16*4) end,
 

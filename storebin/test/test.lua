@@ -1,3 +1,5 @@
+arg = arg or {}  -- (for the `alt_require.lua` test)
+
 local assert_eq, gen_tree = unpack(require "storebin.test.lib")
 
 local decode = require "storebin.decode"

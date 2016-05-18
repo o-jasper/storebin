@@ -116,6 +116,8 @@ gzip "dont know" how it is structured, and so i can give that a hand.
 
 ## TODO
 
+* Manually inspect.. feel that defined-values aren't always getting used -as-defined..
+
 * The float situation `&pm;inf` or `nan` are only recorded insofar i detect them.
   (afaics all finite numbers are good. Also portability wise)
 
