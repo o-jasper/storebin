@@ -5,7 +5,7 @@ return function(data, may_be_nil)
    assert( may_be_nil or data ~= nil )  -- Otherwise confusionly returns nil.
    local ret = ""
    local function write(str) ret = ret .. str end
-   encode_uint(write, 0)
+   encode_uint(write, 0)  -- No definitions.
    encode(write, data)
    return ret
 end

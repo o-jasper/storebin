@@ -4,7 +4,7 @@ local assert_eq, gen_tree = unpack(require "storebin.test.lib")
 
 local decode = require "storebin.decode"
 local plain_encode = require "storebin.plain_encode"
-local compress_encode = require "storebin.compress_encode"
+local old_compress_encode = require "storebin.old_compress_encode"
 local compress_encode2 = require "storebin.compress_encode2"
 
 -- NOTE: json disabled because it can only do lists or tables, not both at the
@@ -13,7 +13,7 @@ local compress_encode2 = require "storebin.compress_encode2"
 
 local encdecs = {
    { encode=plain_encode,    decode=decode,      name="plain" },
-   { encode=compress_encode, decode=decode,      name="compress" },
+   { encode=old_compress_encode, decode=decode,      name="old_compress" },
    { encode=compress_encode2, decode=decode,      name="compress2" },
 --   { encode=json.encode,     decode=json.decode, name="json" },
 
