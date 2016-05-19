@@ -35,7 +35,7 @@ print("#  For each one between brackets (times in nanoseconds)")
 print("# i N [plainencode_time decode_time length]")
 local list = {}
 for _, el in ipairs(encdecs) do table.insert(list, el.name) end
-print("# between brackets after each other " .. table.concat(list, ", "))
+print("# between brackets after each other: " .. table.concat(list, ", "))
 
 for i = 1, tonumber(arg[2]) or 20 do
    local tab, n = gen_tree(true,6, {mini=10000, maxi=10002})-- string_key=true, nice=true})
