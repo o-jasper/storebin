@@ -89,11 +89,9 @@ A **entry** it reads in an unsigned integer first.(this is not the top)
   boolean-arrays up so others can take those three one-byte cases.
 
 * (`6`) Tables *without* metatables. `f` is the length of the key-value table portion.
-  then an uint getting the length of list items.
-  
-  That number of decodes(from the top, typed again) is done getting those elements.
-  
-  Then `f` time getting the key, and then the value.(from the top, typed again)
+  after that, an uint getting the length of list items.
+
+  Then the list items, the key entirely in sequence before the value items.
       
 * (`7`) Tables *with* metatables. Reads up the name; a uint length, and then that
   many bytes, *before* the reading of the (non-`f`) Poorly tested.
