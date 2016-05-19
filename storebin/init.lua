@@ -1,11 +1,10 @@
-local Public = { __constant = true }
-
-for k in pairs{encode=true, plain_encode=true, compress_encode=true,
-               decode=true,
-               file_encode=true, file_plain_encode=true, file_compress_encode=true,
-               file_decode = true } do
-   Public[k] = require("storebin." .. k)
-end
-
-return Public
--- setmetatable({}, { __index = require("storebin.pkg.gen_init")("storebin") })
+return {  -- Note have policy of explicit `require`s now..
+   __constant = true,
+   encode = require "storebin.encode",
+   plain_encode = require "storebin.plain_encode"
+   compress_encode = require "storebin.compress_encode"
+   file_encode = require "storebin.file_encode"
+   file_plain_encode = require "storebin.file_plain_encode"
+   file_compress_encode = require "storebin.file_compress_encode"
+   file_decode = require "storebin.file_decode"
+}
