@@ -114,8 +114,6 @@ gzip "dont know" how it is structured, and so i can give that a hand.
 
 ## TODO
 
-* Manually inspect.. feel that defined-values aren't always getting used -as-defined..
-
 * The float situation `&pm;inf` or `nan` are only recorded insofar i detect them.
   (afaics all finite numbers are good. Also portability wise)
 
@@ -127,11 +125,13 @@ gzip "dont know" how it is structured, and so i can give that a hand.
 
 ## Lua Ring
 
+* [page_html](https://github.com/o-jasper/page_html) userscripts with server for
+  browsing utilities.
+  
+  Also contains a system of serving html pages.
+
 * [lua_Searcher](https://github.com/o-jasper/lua_Searcher) sql formulator including
   search term, and Sqlite bindings.
-
-* [page_html](https://github.com/o-jasper/page_html) provide some methods on an object,
-  get a html page.(with js)
 
 * [storebin](https://github.com/o-jasper/storebin) converts trees to binary, same
   interfaces as json package.(plus `file_encode`, `file_decode`)
