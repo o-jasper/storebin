@@ -24,6 +24,8 @@ local function decode_list(read, cnt, meta_fun, deflist)
    return ret
 end
 
+-- key count is passed. then read list count. Then read the list, then the keys-list,
+-- then the values-list.
 local function decode_table(read, keys_cnt, meta_fun, deflist, list_bool, val_bool)
    local list_cnt = decode_uint(read)
    local ret = list_bool and decode_bool_arr(read, list_cnt, {}) or
@@ -65,14 +67,14 @@ decode = function(read, meta_fun, deflist)
       return -1 * decode_positive_float(read, pass)
    elseif sel == 5 then -- Boolean, nil, other.
       local pass2 = floor(pass/2)
-      if pass%2 == 1 then  -- Read out a defintion.
+      if pass%2 == 1 then  -- Read out a definition.
          return copy(deflist[pass2])
       else
-         if pass2 == 5 then
+         if pass2 == 5 then  -- Values all booleans.
             return decode_table(read, decode_uint(read), meta_fun, deflist, false,true)
-         elseif pass2 == 6 then
+         elseif pass2 == 6 then  -- List elements all booleans.
             return decode_table(read, decode_uint(read), meta_fun, deflist, true, false)
-         elseif pass2 == 7 then
+         elseif pass2 == 7 then  -- All booleans.
             return decode_table(read, decode_uint(read), meta_fun, deflist, true,true)
          else
             return ({false, true, nil, 1/0, -1/0})[1 + pass2]
